@@ -6,13 +6,11 @@ import { ethers } from "hardhat";
 
 const circom = require("circomlibjs");
 import {
-  FROM_EMAIL,
   INTENT_EXPIRATION_PERIOD,
   MAX_ONRAMP_AMOUNT,
   MIN_DEPOSIT_AMOUNT,
   MULTI_SIG,
   ONRAMP_COOL_DOWN_PERIOD,
-  SERVER_KEY_HASH,
   SUSTAINABILITY_FEE,
   SUSTAINABILITY_FEE_RECIPIENT,
   USDC_MINT_AMOUNT,
@@ -61,7 +59,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   });
   console.log("Poseidon6 deployed at ", poseidon6.address);
 
-  const hdfcRamp = await deploy("UPIRamp", {
+  const upiRamp = await deploy("UPIRamp", {
     from: deployer,
     args: [
       deployer,
@@ -78,7 +76,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         : deployer,
     ],
   });
-  console.log("HDFCRamp deployed at ", hdfcRamp.address);
+  console.log("upiRamp deployed at ", upiRamp.address);
 
 
   const nullifierRegistryContract = await ethers.getContractAt(
@@ -88,24 +86,24 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const registrationProcessor = await deploy("HDFCRegistrationProcessor", {
     from: deployer,
-    args: [hdfcRamp.address, nullifierRegistryContract.address,],
+    args: [upiRamp.address, nullifierRegistryContract.address,],
   });
   console.log("RegistrationProcessor deployed at ", registrationProcessor.address);
 
   const sendProcessor = await deploy("HDFCSendProcessor", {
     from: deployer,
-    args: [hdfcRamp.address, nullifierRegistryContract.address],
+    args: [upiRamp.address, nullifierRegistryContract.address],
   });
   console.log("SendProcessor deployed at ", sendProcessor.address);
   console.log("Processors deployed...");
 
-  const hdfcRampContract = await ethers.getContractAt("HDFCRamp", hdfcRamp.address);
-  await hdfcRampContract.initialize(
+  const upiRampContract = await ethers.getContractAt("upiRamp", upiRamp.address);
+  await upiRampContract.initialize(
     registrationProcessor.address,
     sendProcessor.address
   );
 
-  console.log("HDFCRamp initialized...");
+  console.log("upiRamp initialized...");
 
   // Check that owner of the contract can call the function
   const nullifierOwner = await nullifierRegistryContract.owner();
@@ -125,7 +123,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log("NullifierRegistry permissions added...");
 
   console.log("Transferring ownership of contracts...");
-  await setNewOwner(hre, hdfcRampContract, multiSig);
+  await setNewOwner(hre, upiRampContract, multiSig);
   await setNewOwner(
     hre,
     await ethers.getContractAt("HDFCRegistrationProcessor", registrationProcessor.address),
