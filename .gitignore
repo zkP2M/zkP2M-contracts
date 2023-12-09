@@ -13,5 +13,6 @@ artifacts
 
 yarn-error.log
 
-mocks/
+mocks/UPIRegistrationProcessorMock.sol
+mocks/UPISendProcessorMock.sol
 verifiers/
