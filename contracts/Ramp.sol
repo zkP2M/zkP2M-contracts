@@ -319,6 +319,24 @@ contract UPIRamp is Ownable {
         return depositArray;
     }
 
+    // helper function to get best rates for a given amount
+    function getBestRate(uint256 _amount) external view returns (uint256 bestDepositId, uint256 bestRate) {
+        
+        bestDepositId = 0;
+        bestRate = deposits[bestDepositId].conversionRate;
+
+        for (uint256 i = 1; i < depositCounter; ++i) {
+            uint256 conversionRate = deposits[i].conversionRate;
+
+            if (conversionRate > bestRate && deposits[i].remainingDeposits >= _amount) {
+                bestDepositId = i;
+                bestRate = conversionRate;
+            }
+        }
+
+        return (bestDepositId, bestRate);
+    }
+
     /* ============ Internal Functions ============ */
 
     function _calculateIntentHash(
