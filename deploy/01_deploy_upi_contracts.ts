@@ -26,7 +26,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const [deployer] = await hre.getUnnamedAccounts();
   const multiSig = MULTI_SIG[network] ? MULTI_SIG[network] : deployer;
-  const paymentProvider = PaymentProviders.HDFC;
+  const paymentProvider = PaymentProviders.UPI;
 
   let usdcAddress;
   if (!USDC[network]) {
@@ -79,25 +79,27 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log("upiRamp deployed at ", upiRamp.address);
 
 
-  const nullifierRegistryContract = await ethers.getContractAt(
-    "NullifierRegistry",
-    getDeployedContractAddress(network, "NullifierRegistry")
-  );
-
-  const registrationProcessor = await deploy("HDFCRegistrationProcessor", {
+  const nullifierRegistry = await deploy("NullifierRegistry", {
     from: deployer,
-    args: [upiRamp.address, nullifierRegistryContract.address,],
+    args: [],
+  });
+  console.log("Nullifier deployed at ", nullifierRegistry.address);
+
+
+  const registrationProcessor = await deploy("UPIRegistrationProcessor", {
+    from: deployer,
+    args: [upiRamp.address, nullifierRegistry.address,],
   });
   console.log("RegistrationProcessor deployed at ", registrationProcessor.address);
 
-  const sendProcessor = await deploy("HDFCSendProcessor", {
+  const sendProcessor = await deploy("UPISendProcessor", {
     from: deployer,
-    args: [upiRamp.address, nullifierRegistryContract.address],
+    args: [upiRamp.address, nullifierRegistry.address],
   });
   console.log("SendProcessor deployed at ", sendProcessor.address);
   console.log("Processors deployed...");
 
-  const upiRampContract = await ethers.getContractAt("upiRamp", upiRamp.address);
+  const upiRampContract = await ethers.getContractAt("UPIRamp", upiRamp.address);
   await upiRampContract.initialize(
     registrationProcessor.address,
     sendProcessor.address
@@ -105,35 +107,40 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   console.log("upiRamp initialized...");
 
-  // Check that owner of the contract can call the function
-  const nullifierOwner = await nullifierRegistryContract.owner();
-  if ((await hre.getUnnamedAccounts()).includes(nullifierOwner)) {
-    await hre.deployments.rawTx({
-      from: nullifierOwner,
-      to: nullifierRegistryContract.address,
-      data: nullifierRegistryContract.interface.encodeFunctionData("addWritePermission", [sendProcessor.address]),
-    });
-  } else {
-    console.log(
-      `NullifierRegistry owner is not in the list of accounts, must be manually added with the following calldata:
-      ${nullifierRegistryContract.interface.encodeFunctionData("addWritePermission", [sendProcessor.address])}
-      `
-    );
-  }
+  const nullifierRegistryContract = await ethers.getContractAt("NullifierRegistry", nullifierRegistry.address);
+  await nullifierRegistryContract.addWritePermission(sendProcessor.address);
+
   console.log("NullifierRegistry permissions added...");
 
-  console.log("Transferring ownership of contracts...");
-  await setNewOwner(hre, upiRampContract, multiSig);
-  await setNewOwner(
-    hre,
-    await ethers.getContractAt("HDFCRegistrationProcessor", registrationProcessor.address),
-    multiSig
-  );
-  await setNewOwner(
-    hre,
-    await ethers.getContractAt("HDFCSendProcessor", sendProcessor.address),
-    multiSig
-  );
+  // Check that owner of the contract can call the function
+  // const nullifierOwner = await nullifierRegistryContract.owner();
+  // if ((await hre.getUnnamedAccounts()).includes(nullifierOwner)) {
+  //   await hre.deployments.rawTx({
+  //     from: nullifierOwner,
+  //     to: nullifierRegistryContract.address,
+  //     data: nullifierRegistryContract.interface.encodeFunctionData("addWritePermission", [sendProcessor.address]),
+  //   });
+  // } else {
+  //   console.log(
+  //     `NullifierRegistry owner is not in the list of accounts, must be manually added with the following calldata:
+  //     ${nullifierRegistryContract.interface.encodeFunctionData("addWritePermission", [sendProcessor.address])}
+  //     `
+  //   );
+  // }
+  // console.log("NullifierRegistry permissions added...");
+
+  // console.log("Transferring ownership of contracts...");
+  // await setNewOwner(hre, upiRampContract, multiSig);
+  // await setNewOwner(
+  //   hre,
+  //   await ethers.getContractAt("HDFCRegistrationProcessor", registrationProcessor.address),
+  //   multiSig
+  // );
+  // await setNewOwner(
+  //   hre,
+  //   await ethers.getContractAt("HDFCSendProcessor", sendProcessor.address),
+  //   multiSig
+  // );
 
   console.log("Deploy finished...");
 };
