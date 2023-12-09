@@ -3,6 +3,7 @@ import "module-alias/register";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 import { ethers } from "hardhat";
+import { ether, usdc } from "@utils/common/units";
 
 const circom = require("circomlibjs");
 import {
@@ -24,7 +25,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deploy } = await hre.deployments
   const network = hre.deployments.getNetworkName();
 
-  const [deployer] = await hre.getUnnamedAccounts();
+  const [deployer, onRamper, offchainVerifier] = await hre.getUnnamedAccounts();
   console.log('Deploying contracts with the account:', deployer);
   const multiSig = MULTI_SIG[network] ? MULTI_SIG[network] : deployer;
   const paymentProvider = PaymentProviders.UPI;
@@ -40,7 +41,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   } else {
     usdcAddress = USDC[network];
   }
-
 
   const poseidon = await deploy("Poseidon3", {
     from: deployer,
@@ -75,6 +75,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       SUSTAINABILITY_FEE_RECIPIENT[paymentProvider][network] != ""
         ? SUSTAINABILITY_FEE_RECIPIENT[paymentProvider][network]
         : deployer,
+      offchainVerifier
     ],
   });
   console.log("upiRamp deployed at ", upiRamp.address);
@@ -142,6 +143,32 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log(values)
 
   console.log("Deploy finished...");
+
+  // Register user
+  const onRamperSigner = ethers.provider.getSigner(onRamper);
+  await upiRampContract.connect(onRamperSigner).registerWithoutProof("sachin@zkp2m");
+
+  // Signal intent as an on-ramper
+  await upiRampContract.connect(onRamperSigner).signalIntent(
+    0,
+    usdc(1),
+    onRamper
+  );
+
+  // Get intent hash
+  const idHashBytes = ethers.utils.formatBytes32String("sachin@zkp2m");
+  const intentHash = await upiRampContract.getIdCurrentIntentHash(onRamper);
+  console.log(intentHash);
+
+  // On-ramp using off-chain verifier
+  const offchainVerifierSigner = ethers.provider.getSigner(offchainVerifier);
+  const blockTimestamp = (await ethers.provider.getBlock('latest')).timestamp;
+  await upiRampContract.connect(offchainVerifierSigner).onRampWithoutProof(
+    intentHash,
+    "83000000",
+    blockTimestamp,
+    "sachin3929@paytm"
+  );
 };
 
 export default func;

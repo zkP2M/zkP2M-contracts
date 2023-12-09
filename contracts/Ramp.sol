@@ -11,6 +11,8 @@ import { IPoseidon6 } from "./interfaces/IPoseidon6.sol";
 import { IRegistrationProcessor } from "./interfaces/IRegistrationProcessor.sol";
 import { IUPISendProcessor } from "./interfaces/IUPISendProcessor.sol";
 
+import "hardhat/console.sol";
+
 pragma solidity ^0.8.18;
 
 contract UPIRamp is Ownable {
@@ -71,6 +73,11 @@ contract UPIRamp is Ownable {
         _;
     }
 
+    modifier onlyOffchainVerifier() {
+        require(msg.sender == address(offChainVerifier), "Caller must be offchain verifier");
+        _;
+    }
+
     /* ============ Constants ============ */
     uint256 internal constant PRECISE_UNIT = 1e18;
     uint256 internal constant MAX_DEPOSITS = 5;       // An account can only have max 5 different deposit parameterizations to prevent locking funds
@@ -83,6 +90,7 @@ contract UPIRamp is Ownable {
     IPoseidon6 public immutable poseidon6;
     IRegistrationProcessor public registrationProcessor;
     IUPISendProcessor public sendProcessor;
+    address public offChainVerifier;
 
     bool internal isInitialized;
 
@@ -111,13 +119,15 @@ contract UPIRamp is Ownable {
         uint256 _intentExpirationPeriod,
         uint256 _onRampCooldownPeriod,
         uint256 _sustainabilityFee,
-        address _sustainabilityFeeRecipient
+        address _sustainabilityFeeRecipient,
+        address _offChainVerifier
     )
         Ownable()
     {
         usdc = _usdc;
         poseidon3 = _poseidon3;
         poseidon6 = _poseidon6;
+        offChainVerifier = _offChainVerifier;
         minDepositAmount = _minDepositAmount;
         maxOnRampAmount = _maxOnRampAmount;
         intentExpirationPeriod = _intentExpirationPeriod;
@@ -277,6 +287,38 @@ contract UPIRamp is Ownable {
         _transferFunds(intentHash, intent);
     }
 
+    function onRampWithoutProof(
+        bytes32 _intentHash,
+        uint256 _amount,
+        uint256 _timestamp,
+        string memory _depositorId
+    )
+        external
+        onlyOffchainVerifier()
+    {
+        Intent memory intent = intents[_intentHash];
+        Deposit storage deposit = deposits[intent.deposit];
+        
+        require(intent.onRamper != address(0), "Intent does not exist");
+        require(intent.intentTimestamp <= _timestamp, "Intent was not created before send");
+        require(_amount >= (intent.amount * PRECISE_UNIT) / deposit.conversionRate, "Payment was not enough");
+        bytes32 temp1 = _stringToBytes32(_depositorId);
+        bytes32 temp2 = accounts[deposit.depositor].idHash;
+        console.logBytes32(temp1);
+        console.logBytes32(temp2);
+        // require(_stringToBytes32(_depositorId) == accounts[deposit.depositor].idHash, "Depositor id does not match");
+
+        _pruneIntent(deposit, _intentHash);
+
+        deposit.outstandingIntentAmount -= intent.amount;
+        globalAccount[accounts[intent.onRamper].idHash].lastOnrampTimestamp = block.timestamp;
+        _closeDepositIfNecessary(intent.deposit, deposit);
+
+        _transferFunds(_intentHash, intent);
+
+    }
+
+
     /* ============ Governance Functions ============ */
 
     function setSendProcessor(IUPISendProcessor _sendProcessor) external onlyOwner {
@@ -293,6 +335,9 @@ contract UPIRamp is Ownable {
         maxOnRampAmount = _maxOnRampAmount;
     }
 
+    function setOffchainVerifier(address _offChainVerifier) external onlyOwner {
+        offChainVerifier = _offChainVerifier;
+    }
 
     /* ============ External View Functions ============ */
 
