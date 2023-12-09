@@ -160,6 +160,17 @@ contract UPIRamp is Ownable {
 
     }
 
+    // Helper function to register without proof
+    function registerWithoutProof(
+        string memory _idHash
+    )
+        external
+    {
+        require(accounts[msg.sender].idHash == bytes32(0), "Account already associated with idHash");
+
+        accounts[msg.sender].idHash = _stringToBytes32(_idHash);
+    }
+
     function offRamp(
         string memory _upiId,
         uint256 _depositAmount,
@@ -461,5 +472,16 @@ contract UPIRamp is Ownable {
         );
 
         return idHash;
+    }
+
+    function _stringToBytes32(string memory source) internal pure returns (bytes32 result) {
+        bytes memory tempEmptyStringTest = bytes(source);
+        if (tempEmptyStringTest.length == 0) {
+            return 0x0;
+        }
+
+        assembly {
+            result := mload(add(source, 32))
+        }
     }
 }

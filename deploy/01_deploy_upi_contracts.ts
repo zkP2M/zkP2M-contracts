@@ -114,12 +114,15 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log("NullifierRegistry permissions added...");
 
   // Register user
-  await upiRampContract.register(
-    ["0", "0"],
-    [["0", "0"], ["0", "0"]],
-    ["0", "0"],
-    ["1"]
-  );
+  await upiRampContract.registerWithoutProof("c4bTc9bMwdE8xe");
+
+  // Get Id Hash
+  const accountInfo = await upiRampContract.getAccountInfo(deployer);
+  console.log("On-chain RazorPay Key: ", accountInfo.idHash);
+
+  // convert bytes32 to string
+  const idHash = ethers.utils.parseBytes32String(accountInfo.idHash);
+  console.log("On-chain RazorPay Key: ", idHash);
 
   // Create deposits as part of deploy script
   const usdcContract = await ethers.getContractAt("USDCMock", usdcAddress);
@@ -133,6 +136,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // Get deposits from the contract
   const deposits = await upiRampContract.getDeposit(0);
   console.log("Deposit 0: ", deposits);
+
+  // Get best rates
+  const values = await upiRampContract.getBestRate("5000000");
+  console.log(values)
 
   console.log("Deploy finished...");
 };
