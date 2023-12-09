@@ -14,4 +14,4 @@ artifacts
 yarn-error.log
 
 mocks/
-verfiers/
+verifiers/
