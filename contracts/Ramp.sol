@@ -27,7 +27,7 @@ contract UPIRamp is Ownable {
 
     struct Deposit {
         address depositor;
-        uint256[8] upiId;
+        string upiId;
         uint256 depositAmount;              
         uint256 remainingDeposits;          
         uint256 outstandingIntentAmount;    
@@ -161,7 +161,7 @@ contract UPIRamp is Ownable {
     }
 
     function offRamp(
-        uint256[8] memory _upiId,
+        string memory _upiId,
         uint256 _depositAmount,
         uint256 _receiveAmount
     )

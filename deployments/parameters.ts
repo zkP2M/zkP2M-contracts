@@ -15,7 +15,7 @@ export const SERVER_KEY_HASH = {
 
 export const MIN_DEPOSIT_AMOUNT: any = {
     "upi": {
-        "localhost": usdc(21),
+        "localhost": usdc(1),
         "goerli": usdc(20),
         "base": usdc(20),
         "base_staging": usdc(20),

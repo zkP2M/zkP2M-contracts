@@ -25,6 +25,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const network = hre.deployments.getNetworkName();
 
   const [deployer] = await hre.getUnnamedAccounts();
+  console.log('Deploying contracts with the account:', deployer);
   const multiSig = MULTI_SIG[network] ? MULTI_SIG[network] : deployer;
   const paymentProvider = PaymentProviders.UPI;
 
@@ -112,35 +113,26 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   console.log("NullifierRegistry permissions added...");
 
-  // Check that owner of the contract can call the function
-  // const nullifierOwner = await nullifierRegistryContract.owner();
-  // if ((await hre.getUnnamedAccounts()).includes(nullifierOwner)) {
-  //   await hre.deployments.rawTx({
-  //     from: nullifierOwner,
-  //     to: nullifierRegistryContract.address,
-  //     data: nullifierRegistryContract.interface.encodeFunctionData("addWritePermission", [sendProcessor.address]),
-  //   });
-  // } else {
-  //   console.log(
-  //     `NullifierRegistry owner is not in the list of accounts, must be manually added with the following calldata:
-  //     ${nullifierRegistryContract.interface.encodeFunctionData("addWritePermission", [sendProcessor.address])}
-  //     `
-  //   );
-  // }
-  // console.log("NullifierRegistry permissions added...");
+  // Register user
+  await upiRampContract.register(
+    ["0", "0"],
+    [["0", "0"], ["0", "0"]],
+    ["0", "0"],
+    ["1"]
+  );
 
-  // console.log("Transferring ownership of contracts...");
-  // await setNewOwner(hre, upiRampContract, multiSig);
-  // await setNewOwner(
-  //   hre,
-  //   await ethers.getContractAt("HDFCRegistrationProcessor", registrationProcessor.address),
-  //   multiSig
-  // );
-  // await setNewOwner(
-  //   hre,
-  //   await ethers.getContractAt("HDFCSendProcessor", sendProcessor.address),
-  //   multiSig
-  // );
+  // Create deposits as part of deploy script
+  const usdcContract = await ethers.getContractAt("USDCMock", usdcAddress);
+  await usdcContract.approve(upiRamp.address, "10000000");
+  await upiRampContract.offRamp(
+    "sachin3929@paytm",
+    "10000000",
+    "830000000"
+  );
+
+  // Get deposits from the contract
+  const deposits = await upiRampContract.getDeposit(0);
+  console.log("Deposit 0: ", deposits);
 
   console.log("Deploy finished...");
 };
