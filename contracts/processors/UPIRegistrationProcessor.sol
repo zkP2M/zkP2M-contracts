@@ -3,13 +3,13 @@
 // import { StringUtils } from "@zk-email/contracts/utils/StringUtils.sol";
 
 import { BaseProcessor } from "./BaseProcessor.sol";
-import { Groth16Verifier } from "../verifiers/upi_registration_verifier.sol";
+// import { Groth16Verifier } from "../verifiers/upi_registration_verifier.sol";
 import { INullifierRegistry } from "./nullifierRegistries/INullifierRegistry.sol";
 import { IRegistrationProcessor } from "../interfaces/IRegistrationProcessor.sol";
 
 pragma solidity ^0.8.18;
 
-contract UPIRegistrationProcessor is Groth16Verifier, IRegistrationProcessor, BaseProcessor {
+contract UPIRegistrationProcessor is IRegistrationProcessor, BaseProcessor {
 
     // using StringUtils for uint256[];
 
@@ -21,7 +21,6 @@ contract UPIRegistrationProcessor is Groth16Verifier, IRegistrationProcessor, Ba
         address _ramp,
         INullifierRegistry _nullifierRegistry
     )
-        Groth16Verifier()
         BaseProcessor(_ramp, _nullifierRegistry)
     {}
 

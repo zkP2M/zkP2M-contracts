@@ -5,14 +5,14 @@
 import { DateTime } from "../external/DateTime.sol";
 
 import { BaseProcessor } from "./BaseProcessor.sol";
-import { Groth16Verifier } from "../verifiers/upi_send_verifier.sol";
+// import { Groth16Verifier } from "../verifiers/upi_send_verifier.sol";
 import { INullifierRegistry } from "./nullifierRegistries/INullifierRegistry.sol";
 import { IUPISendProcessor } from "../interfaces/IUPISendProcessor.sol";
 // import { StringConversionUtils } from "../lib/StringConversionUtils.sol";
 
 pragma solidity ^0.8.18;
 
-contract UPISendProcessor is Groth16Verifier, IUPISendProcessor, BaseProcessor {
+contract UPISendProcessor is  IUPISendProcessor, BaseProcessor {
     
     // using StringUtils for uint256[];
     // using StringConversionUtils for string;
@@ -26,7 +26,6 @@ contract UPISendProcessor is Groth16Verifier, IUPISendProcessor, BaseProcessor {
         address _ramp,
         INullifierRegistry _nullifierRegistry
     )
-        Groth16Verifier()
         BaseProcessor(_ramp, _nullifierRegistry)
     {}
     
