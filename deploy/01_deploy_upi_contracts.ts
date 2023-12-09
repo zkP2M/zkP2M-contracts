@@ -25,7 +25,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deploy } = await hre.deployments
   const network = hre.deployments.getNetworkName();
 
-  const [deployer, onRamper, offchainVerifier] = await hre.getUnnamedAccounts();
+  const [deployer, onRamper] = await hre.getUnnamedAccounts();
   console.log('Deploying contracts with the account:', deployer);
   const multiSig = MULTI_SIG[network] ? MULTI_SIG[network] : deployer;
   const paymentProvider = PaymentProviders.UPI;
@@ -75,7 +75,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       SUSTAINABILITY_FEE_RECIPIENT[paymentProvider][network] != ""
         ? SUSTAINABILITY_FEE_RECIPIENT[paymentProvider][network]
         : deployer,
-      offchainVerifier
+      deployer    // offChainVerifier
     ],
   });
   console.log("upiRamp deployed at ", upiRamp.address);
@@ -115,60 +115,60 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log("NullifierRegistry permissions added...");
 
   // Register user
-  await upiRampContract.registerWithoutProof("c4bTc9bMwdE8xe");
+  // await upiRampContract.registerWithoutProof("c4bTc9bMwdE8xe");
 
-  // Get Id Hash
-  const accountInfo = await upiRampContract.getAccountInfo(deployer);
-  console.log("On-chain RazorPay Key: ", accountInfo.idHash);
+  // // Get Id Hash
+  // const accountInfo = await upiRampContract.getAccountInfo(deployer);
+  // console.log("On-chain RazorPay Key: ", accountInfo.idHash);
 
-  // convert bytes32 to string
-  const idHash = ethers.utils.parseBytes32String(accountInfo.idHash);
-  console.log("On-chain RazorPay Key: ", idHash);
+  // // convert bytes32 to string
+  // const idHash = ethers.utils.parseBytes32String(accountInfo.idHash);
+  // console.log("On-chain RazorPay Key: ", idHash);
 
-  // Create deposits as part of deploy script
-  const usdcContract = await ethers.getContractAt("USDCMock", usdcAddress);
-  await usdcContract.approve(upiRamp.address, "10000000");
-  await upiRampContract.offRamp(
-    "sachin3929@paytm",
-    "10000000",
-    "830000000"
-  );
+  // // Create deposits as part of deploy script
+  // const usdcContract = await ethers.getContractAt("USDCMock", usdcAddress);
+  // await usdcContract.approve(upiRamp.address, "10000000");
+  // await upiRampContract.offRamp(
+  //   "sachin3929@paytm",
+  //   "10000000",
+  //   "830000000"
+  // );
 
-  // Get deposits from the contract
-  const deposits = await upiRampContract.getDeposit(0);
-  console.log("Deposit 0: ", deposits);
+  // // Get deposits from the contract
+  // const deposits = await upiRampContract.getDeposit(0);
+  // console.log("Deposit 0: ", deposits);
 
-  // Get best rates
-  const values = await upiRampContract.getBestRate("5000000");
-  console.log(values)
+  // // // Get best rates
+  // const values = await upiRampContract.getBestRate("5000000");
+  // console.log(values)
 
-  console.log("Deploy finished...");
+  // console.log("Deploy finished...");
 
-  // Register user
-  const onRamperSigner = ethers.provider.getSigner(onRamper);
-  await upiRampContract.connect(onRamperSigner).registerWithoutProof("sachin@zkp2m");
+  // // Register user
+  // const onRamperSigner = ethers.provider.getSigner(onRamper);
+  // await upiRampContract.connect(onRamperSigner).registerWithoutProof("sachin@zkp2m");
 
-  // Signal intent as an on-ramper
-  await upiRampContract.connect(onRamperSigner).signalIntent(
-    0,
-    usdc(1),
-    onRamper
-  );
+  // // Signal intent as an on-ramper
+  // await upiRampContract.connect(onRamperSigner).signalIntent(
+  //   0,
+  //   usdc(1),
+  //   onRamper
+  // );
 
-  // Get intent hash
-  const idHashBytes = ethers.utils.formatBytes32String("sachin@zkp2m");
-  const intentHash = await upiRampContract.getIdCurrentIntentHash(onRamper);
-  console.log(intentHash);
+  // // Get intent hash
+  // const idHashBytes = ethers.utils.formatBytes32String("sachin@zkp2m");
+  // const intentHash = await upiRampContract.getIdCurrentIntentHash(onRamper);
+  // console.log(intentHash);
 
-  // On-ramp using off-chain verifier
-  const offchainVerifierSigner = ethers.provider.getSigner(offchainVerifier);
-  const blockTimestamp = (await ethers.provider.getBlock('latest')).timestamp;
-  await upiRampContract.connect(offchainVerifierSigner).onRampWithoutProof(
-    intentHash,
-    "83000000",
-    blockTimestamp,
-    "sachin3929@paytm"
-  );
+  // // On-ramp using off-chain verifier
+  // const offchainVerifierSigner = ethers.provider.getSigner(offchainVerifier);
+  // const blockTimestamp = (await ethers.provider.getBlock('latest')).timestamp;
+  // await upiRampContract.connect(offchainVerifierSigner).onRampWithoutProof(
+  //   intentHash,
+  //   "83000000",
+  //   blockTimestamp,
+  //   "sachin3929@paytm"
+  // );
 };
 
 export default func;
