@@ -115,38 +115,38 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log("NullifierRegistry permissions added...");
 
   // Register user
-  // await upiRampContract.registerWithoutProof("c4bTc9bMwdE8xe");
+  await upiRampContract.registerWithoutProof("c4bTc9bMwdE8xe");
 
-  // // Get Id Hash
-  // const accountInfo = await upiRampContract.getAccountInfo(deployer);
-  // console.log("On-chain RazorPay Key: ", accountInfo.idHash);
+  // Get Id Hash
+  const accountInfo = await upiRampContract.getAccountInfo(deployer);
+  console.log("On-chain RazorPay Key: ", accountInfo.idHash);
 
-  // // convert bytes32 to string
-  // const idHash = ethers.utils.parseBytes32String(accountInfo.idHash);
-  // console.log("On-chain RazorPay Key: ", idHash);
+  // convert bytes32 to string
+  const idHash = ethers.utils.parseBytes32String(accountInfo.idHash);
+  console.log("On-chain RazorPay Key: ", idHash);
 
-  // // Create deposits as part of deploy script
-  // const usdcContract = await ethers.getContractAt("USDCMock", usdcAddress);
-  // await usdcContract.approve(upiRamp.address, "10000000");
-  // await upiRampContract.offRamp(
-  //   "sachin3929@paytm",
-  //   "10000000",
-  //   "830000000"
-  // );
+  // Create deposits as part of deploy script
+  const usdcContract = await ethers.getContractAt("USDCMock", usdcAddress);
+  await usdcContract.approve(upiRamp.address, "10000000");
+  await upiRampContract.offRamp(
+    "sachin3929@paytm",
+    "10000000",
+    "830000000"
+  );
 
-  // // Get deposits from the contract
-  // const deposits = await upiRampContract.getDeposit(0);
-  // console.log("Deposit 0: ", deposits);
+  // Get deposits from the contract
+  const deposits = await upiRampContract.getDeposit(0);
+  console.log("Deposit 0: ", deposits);
 
-  // // // Get best rates
-  // const values = await upiRampContract.getBestRate("5000000");
-  // console.log(values)
+  // // Get best rates
+  const values = await upiRampContract.getBestRate("5000000");
+  console.log(values)
 
-  // console.log("Deploy finished...");
+  console.log("Deploy finished...");
 
-  // // Register user
-  // const onRamperSigner = ethers.provider.getSigner(onRamper);
-  // await upiRampContract.connect(onRamperSigner).registerWithoutProof("sachin@zkp2m");
+  // Register user
+  const onRamperSigner = ethers.provider.getSigner(onRamper);
+  await upiRampContract.connect(onRamperSigner).registerWithoutProof("sachin@zkp2m");
 
   // // Signal intent as an on-ramper
   // await upiRampContract.connect(onRamperSigner).signalIntent(

@@ -32,18 +32,38 @@ const config: HardhatUserConfig = {
     localhost: {
       allowBlocksWithSameTimestamp: true,
     },
-    base_staging: {
-      url: "https://developer-access-mainnet.base.org",
-      // @ts-ignore
+    scroll_sepolia: {
+      url: "https://sepolia-rpc.scroll.io",
       accounts: [
-        `0x${process.env.BASE_DEPLOY_PRIVATE_KEY}`,
+        `0x${process.env.SCROLL_SEPOLIA_DEPLOY_PRIVATE_KEY}`,
       ],
       verify: {
         etherscan: {
-          apiUrl: "https://api.basescan.org",
-          apiKey: process.env.BASESCAN_API_KEY
+          apiKey: process.env.SCROLLSCAN_API_KEY
         }
-      },
+      }
+    },
+    arbitrum: {
+      url: "https://arb1.arbitrum.io/rpc",
+      accounts: [
+        `0x${process.env.ARBITRUM_DEPLOY_PRIVATE_KEY}`,
+      ],
+      verify: {
+        etherscan: {
+          apiKey: process.env.ETHERSCAN_API_KEY
+        }
+      }
+    },
+    mantle: {
+      url: "https://rpc.testnet.mantle.xyz",
+      accounts: [
+        `0x${process.env.MANTLE_DEPLOY_PRIVATE_KEY}`,
+      ],
+      verify: {
+        etherscan: {
+          apiKey: process.env.MANTLESCAN_API_KEY
+        }
+      }
     },
     goerli: {
       url: "https://goerli.infura.io/v3/" + process.env.INFURA_TOKEN,
