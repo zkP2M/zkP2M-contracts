@@ -16,9 +16,11 @@ export const SERVER_KEY_HASH = {
 export const MIN_DEPOSIT_AMOUNT: any = {
     "upi": {
         "localhost": usdc(1),
-        "goerli": usdc(20),
+        "goerli": usdc(1),
         "base": usdc(20),
         "base_staging": usdc(20),
+        "mantle": usdc(1),
+        "scroll": usdc(1)
     },
 };
 export const MAX_ONRAMP_AMOUNT: any = {
@@ -27,6 +29,8 @@ export const MAX_ONRAMP_AMOUNT: any = {
         "goerli": usdc(999),
         "base": usdc(25),
         "base_staging": usdc(25),
+        "mantle": usdc(998),
+        "scroll": usdc(998)
     },
 };
 export const INTENT_EXPIRATION_PERIOD: any = {
@@ -35,14 +39,18 @@ export const INTENT_EXPIRATION_PERIOD: any = {
         "goerli": BigNumber.from(300),
         "base": ONE_DAY_IN_SECONDS,
         "base_staging": BigNumber.from(300),
+        "mantle": BigNumber.from(300),
+        "scroll": BigNumber.from(300)
     },
 };
 export const ONRAMP_COOL_DOWN_PERIOD: any = {
     "upi": {
-        "localhost": THREE_MINUTES_IN_SECONDS.sub(1),
-        "goerli": THREE_MINUTES_IN_SECONDS,
+        "localhost": ZERO,
+        "goerli": ZERO,
         "base": ONE_DAY_IN_SECONDS,
         "base_staging": BigNumber.from(180),
+        "mantle": ZERO,
+        "scroll": ZERO
     },
 };
 export const SUSTAINABILITY_FEE: any = {
@@ -51,6 +59,8 @@ export const SUSTAINABILITY_FEE: any = {
         "goerli": ether(.001),
         "base": ZERO,
         "base_staging": ZERO,
+        "mantle": ZERO,
+        "scroll": ZERO
     },
 };
 export const SUSTAINABILITY_FEE_RECIPIENT: any = {
@@ -59,6 +69,8 @@ export const SUSTAINABILITY_FEE_RECIPIENT: any = {
         "goerli": "",
         "base": "0x0bC26FF515411396DD588Abd6Ef6846E04470227",
         "base_staging": "0xdd93E0f5fC32c86A568d87Cb4f08598f55E980F3",
+        "mantle": "",
+        "scroll": ""
     },
 };
 
@@ -68,6 +80,8 @@ export const MULTI_SIG: any = {
     "goerli": "",
     "base": "0x0bC26FF515411396DD588Abd6Ef6846E04470227",
     "base_staging": "0xdd93E0f5fC32c86A568d87Cb4f08598f55E980F3",
+    "mantle": "",
+    "scroll": ""
 };
 
 // USDC

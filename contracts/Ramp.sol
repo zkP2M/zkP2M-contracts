@@ -213,7 +213,11 @@ contract UPIRamp is Ownable {
 
     }
 
-    function signalIntent(uint256 _depositId, uint256 _amount, address _to) external onlyRegisteredUser {
+    function signalIntent(uint256 _depositId, uint256 _amount, address _to) external {
+
+        if (accounts[msg.sender].idHash == 0) {
+            accounts[msg.sender].idHash = _addressToBytes32(msg.sender);
+        }
         bytes32 idHash = accounts[msg.sender].idHash;
         Deposit storage deposit = deposits[_depositId];
         bytes32 depositorIdHash = accounts[deposit.depositor].idHash;
@@ -529,4 +533,9 @@ contract UPIRamp is Ownable {
             result := mload(add(source, 32))
         }
     }
+
+    function _addressToBytes32(address addr) internal pure returns (bytes32) {
+        return bytes32(uint256(uint160(addr)) << 96);
+    }
+
 }
